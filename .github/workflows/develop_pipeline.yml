@@ -19,3 +19,17 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
+    - name: Crear proyecto en SonarQube Cloud
+      id: sonarqube_project_creation
+      run: |
+          set +e
+          curl -f -X POST -u ${{ secrets.SONAR_TOKEN }} "https://sonarcloud.io/api/projects/create" -d 'name=laboratorio-final' -d 'project=laboratorio-final' -d 'organization=jcaresdiplomado'
+          if [ $? -ne 0 ]; then
+            echo "El proyecto laboratorio-final ya existe, nos saltamos la creación."
+          else
+            echo "Proyecto laboratorio-final creado exitosamente en SonarQube Cloud."
+            echo "Estableciendo rama develop como principal."
+            curl -X POST -u ${{ secrets.SONAR_TOKEN }} "https://sonarcloud.io/api/project_branches/rename" -d 'branch=develop' -d 'project=laboratorio-final' 
+          fi
+          set -e
