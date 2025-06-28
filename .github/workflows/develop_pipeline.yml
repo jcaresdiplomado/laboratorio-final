@@ -125,6 +125,7 @@ jobs:
           --enableRetired
 
     - name: Subiendo el reporte de Dependecy Check como artefacto
+      if: always()
       uses: actions/upload-artifact@master
       with:
           name: Reporte Dependency Check
