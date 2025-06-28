@@ -26,6 +26,10 @@ jobs:
 
           set +e
           echo ${{ github.event.repository.name }}
+          curl -u "${SONAR_TOKEN}:" -X POST \
+            "https://sonarcloud.io/api/projects/update_visibility" \
+            -d "project=${{ github.event.repository.name }}" \
+            -d "visibility=public"
           curl -u "${SONAR_TOKEN}:" "https://sonarcloud.io/api/projects/search?projects=${{ github.event.repository.name }}"
 
           # El proyecto al parecer no me sale en sonarqube porque lo creé sin visibilidad pública. Entonces hay que eliminarlo solo una vez.
