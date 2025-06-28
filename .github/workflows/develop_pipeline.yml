@@ -69,8 +69,8 @@ jobs:
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
           -Dsonar.branch.name=${GITHUB_REF##*/}
 
-    -name: Contando vulnerabilidades críticas, altas y medias
-     run: |
+    - name: Contando vulnerabilidades críticas, altas y medias
+      run: |
         SONAR_VULNERABILITIES=$(curl -f -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/issues/search" \
         -d "componentKeys=${{ github.event.repository.name }}" \
         -d "types=VULNERABILITY" \
