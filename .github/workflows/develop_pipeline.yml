@@ -68,6 +68,7 @@ jobs:
     #       -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
     #       -Dsonar.branch.name=${GITHUB_REF##*/}
     #
+
     - name: Ejecutar análisis SAST con SonarQube con action de sonarSoure
       uses: SonarSource/sonarqube-scan-action@v4
       env: 
@@ -80,3 +81,14 @@ jobs:
           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
           -Dsonar.branch.name=${GITHUB_REF##*/}
 
+    -name: Contando vulnerabilidades críticas, altas y medias
+     run:|
+        SONAR_VULNERABILITIES=$(curl -f -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/issues/search" \
+        -d "componentKeys=${{ github.event.repository.name }}" \
+        -d "types=VULNERABILITY" \
+        -d "impactSeverities=BLOCKER,HIGH,MEDIUM")
+
+        if[ $SONAR_VULNERABILITIES -neq 0 ]; then
+          echo "Número de vulnerabilidades encontradas: $SONAR_VULNERABILITIES"
+          exit 1
+        fi
