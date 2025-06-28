@@ -26,6 +26,7 @@ jobs:
           set +e
           # Considerar usar siempre comillas dobles. Si no funciona probar cambiando el nombre del proyecto (name y project deben ser iguales siempre)
           curl -f -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/projects/create" -d "name=laboratorio-final-" -d "project=laboratorio-final-" -d "organization=jcaresdiplomado" -d "visibility=public" -d "branch=develop" -d "mainBranch=develop"
+          curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_branches/list" -d "project=laboratorio-final-"
 
           if [ $? -ne 0 ]; then
             echo "El proyecto laboratorio-final ya existe, nos saltamos la creación."
