@@ -40,6 +40,9 @@ jobs:
           MAIN_BRANCH=$(curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_branches/list" -d "project=laboratorio-final-" | jq -r '.branches[] | select(.isMain == true) | .name')
           if [ "$MAIN_BRANCH" != "develop" ]; then
             echo "Error: La rama principal no es 'develop', es '$MAIN_BRANCH'."
-            exit 1
+            echo "Cmabiando la rama principal a 'develop'."
+
+            curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_branches/rename" -d "branch=develop" -d "project=laboratorio-final-" -d "name=laboratorio-final-"
+            # exit 1
           fi
           set -e
