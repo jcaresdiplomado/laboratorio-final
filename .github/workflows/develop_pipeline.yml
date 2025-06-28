@@ -23,7 +23,17 @@ jobs:
     - name: Crear proyecto en SonarQube Cloud
       id: sonarqube_project_creation
       run: |
+
           set +e
+          curl -u "${SONAR_TOKEN}:" "https://sonarcloud.io/api/projects/search?projects=<PROJECT_KEY>"
+
+          # El proyecto al parecer no me sale en sonarqube porque lo creé sin visibilidad pública. Entonces hay que eliminarlo solo una vez.
+          curl -f -u "${SONAR_TOKEN}:" -X POST \
+            "https://sonarcloud.io/api/projects/delete" \
+            -d "project=${{ github.event.repository.name }}"
+
+          curl -u "${SONAR_TOKEN}:" "https://sonarcloud.io/api/projects/search?projects=<PROJECT_KEY>"
+          exit 1
           # Considerar usar siempre comillas dobles. Si no funciona probar cambiando el nombre del proyecto (name y project deben ser iguales siempre)
           curl -f -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/projects/create" -d "name=${{ github.event.repository.name }}" -d "project=${{ github.event.repository.name }}" -d "organization=jcaresdiplomado" -d "visibility=public"
 
