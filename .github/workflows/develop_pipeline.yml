@@ -24,8 +24,10 @@ jobs:
       id: sonarqube_project_creation
       run: |
           set +e
+          echo "branch_name=${GITHUB_REF##*/}"
+          exit 1
           # Considerar usar siempre comillas dobles. Si no funciona probar cambiando el nombre del proyecto (name y project deben ser iguales siempre)
-          curl -f -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/projects/create" -d "name=laboratorio-final-" -d "project=laboratorio-final-" -d "organization=jcaresdiplomado" -d "visibility=public" -d "branch=develop" -d "mainBranch=develop"
+          curl -f -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/projects/create" -d "name=${{ github.event.repository.name }}" -d "project=${{ github.event.repository.name }}" -d "organization=jcaresdiplomado" -d "visibility=public"
 
           if [ $? -ne 0 ]; then
             echo "El proyecto laboratorio-final ya existe, nos saltamos la creación."
@@ -33,15 +35,16 @@ jobs:
             echo "Proyecto laboratorio-final creado exitosamente en SonarQube Cloud."
             # echo "Estableciendo rama develop como principal."
             # curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_branches/rename" -d "branch=develop" -d "project=laboratorio-final-" -d "name=laboratorio-final-"
+          #
           fi
           # Ahora elegimos la rama develop como principal si es que no es
           # Ejemplo de salida del curl consultando las ramas:{"branches":[{"name":"master","isMain":true,"type":"LONG","branchId":"b2a7126f-0fdf-4697-8aea-b7e18b793287","branchUuidV1":"AZexjqe1mn08eUWmbf6z"}]}
-          MAIN_BRANCH=$(curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_branches/list" -d "project=laboratorio-final-" | jq -r '.branches[] | select(.isMain == true) | .name')
+          MAIN_BRANCH=$(curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_branches/list" -d "project=${{ github.event.repository.name }}" | jq -r '.branches[] | select(.isMain == true) | .name')
           if [ "$MAIN_BRANCH" != "develop" ]; then
             echo "Error: La rama principal no es 'develop', es '$MAIN_BRANCH'."
             echo "Cambiando la rama principal a 'develop'."
 
-            curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_branches/rename" -d "branch=develop" -d "project=laboratorio-final-" -d "name=develop"
+            curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_branches/rename" -d "project=${{ github.event.repository.name }}" -d "name=develop"
             # exit 1
           else
             echo "La rama principal ya es 'develop'."
