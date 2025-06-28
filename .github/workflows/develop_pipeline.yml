@@ -42,7 +42,7 @@ jobs:
             echo "Error: La rama principal no es 'develop', es '$MAIN_BRANCH'."
             echo "Cmabiando la rama principal a 'develop'."
 
-            curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_branches/rename" -d "branch=develop" -d "project=laboratorio-final-" -d "name=laboratorio-final-"
+            curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_branches/rename" -d "branch=develop" -d "project=laboratorio-final-"
             # exit 1
           fi
           set -e
