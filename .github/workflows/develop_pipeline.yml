@@ -98,7 +98,6 @@ jobs:
 
   SCA:
     runs-on: ubuntu-latest
-    if: ${{ env.RUN_SCA == 'true' }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -115,6 +114,7 @@ jobs:
         fi
 
     - name: Ejecutar análisis SCA con Dependecy Check
+      if: ${{ env.RUN_SCA == 'true' }}
       uses: dependency-check/Dependency-Check_Action@main
       with:
         project: '${{ github.event.repository.name }}'
@@ -126,7 +126,7 @@ jobs:
           --enableRetired
 
     - name: Subiendo el reporte de Dependecy Check como artefacto
-      if: always()
+      if: ${{ env.RUN_SCA == 'true' || always() }}
       uses: actions/upload-artifact@master
       with:
           name: Reporte Dependency Check
