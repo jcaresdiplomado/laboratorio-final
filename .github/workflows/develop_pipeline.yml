@@ -76,7 +76,7 @@ jobs:
         SONAR_VULNERABILITIES=$(curl -f -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/issues/search" \
         -d "componentKeys=${{ github.event.repository.name }}" \
         -d "types=VULNERABILITY" \
-        -d "impactSeverities=BLOCKER,HIGH,MEDIUM" | jq '.total')
+        -d "impactSeverities=BLOCKER,CRITICAL,HIGH,MEDIUM" | jq '.total')
 
         if [ "$SONAR_VULNERABILITIES" -ne 0 ]; then
           echo "Número de vulnerabilidades encontradas: $SONAR_VULNERABILITIES "
