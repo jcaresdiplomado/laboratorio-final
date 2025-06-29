@@ -145,7 +145,16 @@ jobs:
     - name: Construir imagen Docker
       run: |
         echo "Construyendo imagen Docker..."
-        docker build -t ${{ github.event.repository.name }} .
+        docker build -t ${{ github.event.repository.name }}:latest .
+
+        echo "Empaquetando la inagen en un targz..."
+        docker save ${{ github.event.repository.name }}:latest | gzip > ${{ github.event.repository.name }}.tar.gz
+
+    - name: Subiendo la imagen docker generada como artefacto
+      uses: actions/upload-artifact@master
+      with:
+          name: ${{ github.event.repository.name }}.tar.gz
+          path: ${{github.workspace}}/docker_image
 
 
 
