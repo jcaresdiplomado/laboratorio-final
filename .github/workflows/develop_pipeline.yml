@@ -121,7 +121,7 @@ jobs:
         project: '${{ github.event.repository.name }}'
         path: '.'
         format: 'HTML'
-        out: 'reports' # this is the default, no need to specify unless you wish to override it
+        out: 'reports'
         args: >
           --failOnCVSS 7
           --enableRetired
@@ -158,7 +158,7 @@ jobs:
       uses: actions/upload-artifact@master
       with:
           name: ${{ github.event.repository.name }}.tar.gz
-          path: ./docker_image
+          path: .
 
 
 
