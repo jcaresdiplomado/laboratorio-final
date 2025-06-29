@@ -105,6 +105,7 @@ jobs:
         fetch-depth: 0
 
     - name: Instalar dependencias del proyecto
+      if: ${{ env.RUN_SCA == 'true' }}
       run: |
         echo "Instalando dependencias del proyecto..."
         if [ -f "package.json" ]; then
@@ -130,7 +131,7 @@ jobs:
       uses: actions/upload-artifact@master
       with:
           name: Reporte Dependency Check
-          path: ${{github.workspace}}/reports
+          path: ./reports
 
 
   DockerBuild:
@@ -148,15 +149,16 @@ jobs:
       run: |
         echo "Construyendo imagen Docker..."
         docker build -t ${{ github.event.repository.name }}:latest .
-
+        ls -la
         echo "Empaquetando la inagen en un targz..."
         docker save ${{ github.event.repository.name }}:latest | gzip > ${{ github.event.repository.name }}.tar.gz
+        ls -la
 
     - name: Subiendo la imagen docker generada como artefacto
       uses: actions/upload-artifact@master
       with:
           name: ${{ github.event.repository.name }}.tar.gz
-          path: ${{github.workspace}}/docker_image
+          path: ./docker_image
 
 
 
