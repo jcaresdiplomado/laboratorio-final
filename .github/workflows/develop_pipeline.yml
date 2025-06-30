@@ -164,10 +164,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: DockerBuild
     if: always()
-    
-    steps:
 
-    - name: Descargando la imagen docker generada como artefacto en el job anterior
+    steps:
+    - name: Descargando la imagen docker generada como artefacto en el job DockerBuild
       uses: actions/download-artifact@v4
       with:
         name: ${{ github.event.repository.name }}.tar.gz
@@ -184,6 +183,23 @@ jobs:
         format: 'table'
         exit-code: '1'
         severity: 'CRITICAL,HIGH,MEDIUM'
+
+  DAST:
+    runs-on: self-hosted
+    needs: ContainerScan
+    if: always()
+
+    steps:
+    - name: Descargando la imagen docker generada como artefacto en el job DockerBuild
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ github.event.repository.name }}.tar.gz
+        path: .
+
+    - name: Descomprimiendo y cargando la imagen docker descargada
+      run: |
+        gunzip -c ./${{ github.event.repository.name }}.tar.gz | docker load
+        docker image ls
 
 
 
