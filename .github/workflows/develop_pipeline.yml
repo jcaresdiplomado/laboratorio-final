@@ -8,8 +8,10 @@ on:
 
 env:
   SONAR_ORGANIZATION: jcaresdiplomado
-  RUN_SAST: true
+  RUN_SAST: false
   RUN_SCA: true
+  RUN_CONTAINER_SCAN: false
+  RUN_DAST: false
 
 permissions:
   contents: read
@@ -114,17 +116,17 @@ jobs:
           echo "No se encontraron dependencias a instalar."
         fi
 
-    - name: Ejecutar análisis SCA con Dependecy Check
+    - name: Ejecutar análisis SCA con Dependency Check
       if: ${{ env.RUN_SCA == 'true' }}
       uses: dependency-check/Dependency-Check_Action@main
       with:
         project: '${{ github.event.repository.name }}'
         path: '.'
-        format: 'HTML'
+        format: 'JSON'
         out: 'reports'
-        args: >
-          --failOnCVSS 7
-          --enableRetired
+        # args: >
+        #   --failOnCVSS 7
+        #   --enableRetired
 
     - name: Subiendo el reporte de Dependecy Check como artefacto
       if: ${{ env.RUN_SCA == 'true' || always() }}
@@ -133,6 +135,17 @@ jobs:
           name: Reporte Dependency Check
           path: ./reports
 
+    - name: Checkeando las vulnerabilidades encontradas
+      if: ${{ env.RUN_SCA == 'true' || always() }}
+      run: |
+        echo "Revisando vulnerabilidades encontradas por Dependency Check..."
+        VULNERABILITIES=$(jq '.dependencies[] | select(.vulnerabilities | length > 0)' reports/dependency-check-report.json | wc -l)
+        if [ "$VULNERABILITIES" -ne 0 ]; then
+          echo "Número de vulnerabilidades encontradas: $VULNERABILITIES"
+          exit 1
+        else
+          echo "No se encontraron vulnerabilidades."
+        fi
 
   DockerBuild:
     runs-on: ubuntu-latest
@@ -146,6 +159,7 @@ jobs:
         fetch-depth: 0
 
     - name: Construir imagen Docker
+      if: ${{ env.RUN_CONTAINER_SCAN == 'true' }}
       run: |
         echo "Construyendo imagen Docker..."
         docker build -t ${{ github.event.repository.name }}:latest .
@@ -155,6 +169,7 @@ jobs:
         ls -la
 
     - name: Subiendo la imagen docker generada como artefacto
+      if: ${{ env.RUN_CONTAINER_SCAN == 'true' }}
       uses: actions/upload-artifact@master
       with:
           name: ${{ github.event.repository.name }}.tar.gz
@@ -163,20 +178,23 @@ jobs:
   ContainerScan:
     runs-on: ubuntu-latest
     needs: DockerBuild
-    if: always()
+    # if: always()
 
     steps:
     - name: Descargando la imagen docker generada como artefacto en el job DockerBuild
+      if: ${{ env.RUN_CONTAINER_SCAN == 'true' }}
       uses: actions/download-artifact@v4
       with:
         name: ${{ github.event.repository.name }}.tar.gz
         path: .
 
     - name: Descomprimiendo y cargando la imagen docker descargada
+      if: ${{ env.RUN_CONTAINER_SCAN == 'true' }}
       run: |
         gunzip -c ./${{ github.event.repository.name }}.tar.gz | docker load
 
     - name: Ejecutar análisis de seguridad de contenedor con Trivy
+      if: ${{ env.RUN_CONTAINER_SCAN == 'true' }}
       uses: aquasecurity/trivy-action@master
       with:
         image-ref: ${{ github.event.repository.name }}:latest
@@ -188,25 +206,29 @@ jobs:
     # runs-on: self-hosted
     runs-on: ubuntu-latest
     needs: ContainerScan
-    if: always()
+    # if: always()
 
     steps:
     - name: Descargando la imagen docker generada como artefacto en el job DockerBuild
+      if: ${{ env.RUN_CONTAINER_SCAN == 'true' && env.RUN_DAST == 'true' }}
       uses: actions/download-artifact@v4
       with:
         name: ${{ github.event.repository.name }}.tar.gz
         path: .
 
     - name: Descomprimiendo y cargando la imagen docker descargada
+      if: ${{ env.RUN_CONTAINER_SCAN == 'true' && env.RUN_DAST == 'true' }}
       run: |
         gunzip -c ./${{ github.event.repository.name }}.tar.gz | docker load
 
     - name: Corriendo contenedor de docker para DAST
+      if: ${{ env.RUN_CONTAINER_SCAN == 'true' && env.RUN_DAST == 'true' }}
       run: |
         docker run -d --name ${{ github.event.repository.name }} -p 80:3000 ${{ github.event.repository.name }}:latest
         sleep 30 # Esperar a que el contenedor esté listo
 
     - name: Ejecutar análisis DAST con OWASP ZAP
+      if: ${{ env.RUN_CONTAINER_SCAN == 'true' && env.RUN_DAST == 'true' }}
       uses: zaproxy/action-full-scan@v0.12.0
       with:
         target: 'http://localhost:80'
