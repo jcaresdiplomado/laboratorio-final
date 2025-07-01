@@ -185,7 +185,8 @@ jobs:
         severity: 'CRITICAL,HIGH,MEDIUM'
 
   DAST:
-    runs-on: self-hosted
+    # runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: ContainerScan
     if: always()
 
@@ -199,8 +200,14 @@ jobs:
     - name: Descomprimiendo y cargando la imagen docker descargada
       run: |
         gunzip -c ./${{ github.event.repository.name }}.tar.gz | docker load
-        docker image ls
 
+    - name: Corriendo contenedor de docker para DAST
+      run: |
+        docker run -d --name ${{ github.event.repository.name }} -p 80:3000 ${{ github.event.repository.name }}:latest
+        sleep 30 # Esperar a que el contenedor esté listo
 
-
+    - name: Ejecutar análisis DAST con OWASP ZAP
+      uses: zaproxy/action-full-scan@v0.12.0
+      with:
+        target: 'http://localhost:80'
 
