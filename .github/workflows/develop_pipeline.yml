@@ -139,12 +139,21 @@ jobs:
       if: ${{ env.RUN_SCA == 'true' || always() }}
       run: |
         echo "Revisando vulnerabilidades encontradas por Dependency Check..."
-        VULNERABILITIES=$(jq '.dependencies[] | select(.vulnerabilities | length > 0)' reports/dependency-check-report.json | wc -l)
-        if [ "$VULNERABILITIES" -ne 0 ]; then
-          echo "Número de vulnerabilidades encontradas: $VULNERABILITIES"
+        CRITICAL=$(jq '[.dependencies[].vulnerabilities[] | select(.severity == "CRITICAL")] | length' reports/dependency-check-report.json)
+        HIGH=$(jq '[.dependencies[].vulnerabilities[] | select(.severity == "HIGH")] | length' reports/dependency-check-report.json)
+        MEDIUM=$(jq '[.dependencies[].vulnerabilities[] | select(.severity == "MEDIUM")] | length' reports/dependency-check-report.json)
+        echo "Vulnerabilidades críticas: $CRITICAL"
+        echo "Vulnerabilidades altas: $HIGH"
+        echo "Vulnerabilidades medias: $MEDIUM"
+
+        TOTAL=$((CRITICAL + HIGH + MEDIUM))
+        echo "Total de vulnerabilidades encontradas: $TOTAL"
+
+        if [ "$TOTAL" -ne 0 ]; then
+          echo "Se encontraron vulnerabilidades críticas, altas o medias."
           exit 1
         else
-          echo "No se encontraron vulnerabilidades."
+          echo "No se encontraron vulnerabilidades críticas, altas o medias."
         fi
 
   DockerBuild:
