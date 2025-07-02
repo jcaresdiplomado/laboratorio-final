@@ -139,9 +139,9 @@ jobs:
       if: ${{ env.RUN_SCA == 'true' || always() }}
       run: |
         echo "Revisando vulnerabilidades encontradas por Dependency Check..."
-        CRITICAL=$(jq '[.dependencies[].vulnerabilities[] | select(.severity == "CRITICAL")] | length' reports/dependency-check-report.json)
-        HIGH=$(jq '[.dependencies[].vulnerabilities[] | select(.severity == "HIGH")] | length' reports/dependency-check-report.json)
-        MEDIUM=$(jq '[.dependencies[].vulnerabilities[] | select(.severity == "MEDIUM")] | length' reports/dependency-check-report.json)
+        CRITICAL=$(jq '[.dependencies[] | select(.vulnerabilities | type == "array") | select(.vulnerabilities[]?.severity == "CRITICAL")] | length' reports/dependency-check-report.json)
+        HIGH=$(jq '[.dependencies[] | select(.vulnerabilities | type == "array") | select(.vulnerabilities[]?.severity == "HIGH")] | length' reports/dependency-check-report.json)
+        MEDIUM=$(jq '[.dependencies[] | select(.vulnerabilities | type == "array") | select(.vulnerabilities[]?.severity == "MEDIUM")] | length' reports/dependency-check-report.json)
         echo "Vulnerabilidades críticas: $CRITICAL"
         echo "Vulnerabilidades altas: $HIGH"
         echo "Vulnerabilidades medias: $MEDIUM"
