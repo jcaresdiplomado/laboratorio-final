@@ -220,9 +220,9 @@ jobs:
     - name: Conteo de vulderabilidades encontradas por trivy
       run: |
         ls -la
-        CRITICAL=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | length' ${{ github.event.repository.name }}-trivy-report.json)
-        HIGH=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "HIGH") | length' ${{ github.event.repository.name }}-trivy-report.json)
-        MEDIUM=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "MEDIUM") | length' ${{ github.event.repository.name }}-trivy-report.json)
+        CRITICAL=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | length' ${{ github.event.repository.name }}-trivy-report.json | wc -l)
+        HIGH=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "HIGH") | length' ${{ github.event.repository.name }}-trivy-report.json | wc -l)
+        MEDIUM=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "MEDIUM") | length' ${{ github.event.repository.name }}-trivy-report.json | wc -l)
         echo "Número vulnerabilidades críticas: $CRITICAL"
         echo "Número vulnerabilidades altas: $HIGH"
         echo "Número vulnerabilidades medias: $MEDIUM"
