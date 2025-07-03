@@ -9,8 +9,8 @@ on:
 env:
   SONAR_ORGANIZATION: jcaresdiplomado
   RUN_SAST: false
-  RUN_SCA: true
-  RUN_CONTAINER_SCAN: false
+  RUN_SCA: false
+  RUN_CONTAINER_SCAN: true
   RUN_DAST: false
 
 permissions:
@@ -173,7 +173,7 @@ jobs:
         echo "Construyendo imagen Docker..."
         docker build -t ${{ github.event.repository.name }}:latest .
         ls -la
-        echo "Empaquetando la inagen en un targz..."
+        echo "Empaquetando la imagen en un targz..."
         docker save ${{ github.event.repository.name }}:latest | gzip > ${{ github.event.repository.name }}.tar.gz
         ls -la
 
@@ -187,7 +187,6 @@ jobs:
   ContainerScan:
     runs-on: ubuntu-latest
     needs: DockerBuild
-    # if: always()
 
     steps:
     - name: Descargando la imagen docker generada como artefacto en el job DockerBuild
@@ -207,9 +206,21 @@ jobs:
       uses: aquasecurity/trivy-action@master
       with:
         image-ref: ${{ github.event.repository.name }}:latest
-        format: 'table'
-        exit-code: '1'
-        severity: 'CRITICAL,HIGH,MEDIUM'
+        format: 'json'
+        output: '${{ github.event.repository.name }}-trivy-report.json'
+
+    - name: Subiendo el reporte de Trivy como artefacto
+      if: ${{ env.RUN_CONTAINER_SCAN == 'true' || always() }}
+      uses: actions/upload-artifact@master
+      with:
+          name: ${{ github.event.repository.name }}-trivy-report
+          path: ./${{ github.event.repository.name }}-trivy-report.json
+    # - name: Conteo de vulderabilidades encontradas por trivy
+    #   run: |
+    #     CRITICAL=$(jq '.Results[].Vulnerabilities[] | select(.Severity=="CRITICAL") | length' ${{ github.event.repository.name }}-trivy-results.json | wc -l)
+    #     HIGH=$(jq '.Results[].Vulnerabilities[] | select(.Severity=="HIGH") | length' ${{ github.event.repository.name }}-trivy-results.json | wc -l)
+    #     echo "Critical vulnerabilities: $CRITICAL"
+    #     echo "High vulnerabilities: $HIGH"
 
   DAST:
     # runs-on: self-hosted
