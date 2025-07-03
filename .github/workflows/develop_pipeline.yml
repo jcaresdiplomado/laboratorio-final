@@ -219,6 +219,7 @@ jobs:
 
     - name: Conteo de vulderabilidades encontradas por trivy
       run: |
+        ls -la
         CRITICAL=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | length' ${{ github.event.repository.name }}-trivy-results.json)
         HIGH=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "HIGH") | length' ${{ github.event.repository.name }}-trivy-results.json)
         MEDIUM=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "MEDIUM") | length' ${{ github.event.repository.name }}-trivy-results.json)
