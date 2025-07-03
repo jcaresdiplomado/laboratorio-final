@@ -216,12 +216,25 @@ jobs:
       with:
           name: ${{ github.event.repository.name }}-trivy-report
           path: ./${{ github.event.repository.name }}-trivy-report.json
-    # - name: Conteo de vulderabilidades encontradas por trivy
-    #   run: |
-    #     CRITICAL=$(jq '.Results[].Vulnerabilities[] | select(.Severity=="CRITICAL") | length' ${{ github.event.repository.name }}-trivy-results.json | wc -l)
-    #     HIGH=$(jq '.Results[].Vulnerabilities[] | select(.Severity=="HIGH") | length' ${{ github.event.repository.name }}-trivy-results.json | wc -l)
-    #     echo "Critical vulnerabilities: $CRITICAL"
-    #     echo "High vulnerabilities: $HIGH"
+
+    - name: Conteo de vulderabilidades encontradas por trivy
+      run: |
+        CRITICAL=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | length' ${{ github.event.repository.name }}-trivy-results.json)
+        HIGH=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "HIGH") | length' ${{ github.event.repository.name }}-trivy-results.json)
+        MEDIUM=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "MEDIUM") | length' ${{ github.event.repository.name }}-trivy-results.json)
+        echo "Número vulnerabilidades críticas: $CRITICAL"
+        echo "Número vulnerabilidades altas: $HIGH"
+        echo "Número vulnerabilidades medias: $MEDIUM"
+
+        TOTAL=$((CRITICAL + HIGH + MEDIUM))
+        echo "Total de vulnerabilidades encontradas: $TOTAL"
+
+        if [ "$TOTAL" -ne 0 ]; then
+          echo "Se encontraron vulnerabilidades críticas, altas o medias."
+          exit 1
+        else
+          echo "No se encontraron vulnerabilidades críticas, altas o medias."
+        fi
 
   DAST:
     # runs-on: self-hosted
