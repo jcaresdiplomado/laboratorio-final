@@ -269,6 +269,9 @@ jobs:
         report-format: 'json'
         report-file: '${{ github.event.repository.name }}-zap-report.json'
         github-token: ''
+        allow_issue_writing: false
+        rules_file_name: '.zap/rules.tsv'
+        cmd_options: '-a'
 
     - name: Subiendo el reporte de Trivy como artefacto
       if: ${{ env.RUN_DAST == 'true' }}
