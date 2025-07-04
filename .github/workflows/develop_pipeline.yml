@@ -184,7 +184,7 @@ jobs:
 
   ContainerScan:
     runs-on: ubuntu-latest
-    # if: always()
+    if: always()
     needs: DockerBuild
 
     steps:
