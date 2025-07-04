@@ -8,9 +8,9 @@ on:
 
 env:
   SONAR_ORGANIZATION: jcaresdiplomado
-  RUN_SAST: false
-  RUN_SCA: false
-  RUN_CONTAINER_SCAN: false
+  RUN_SAST: true
+  RUN_SCA: true
+  RUN_CONTAINER_SCAN: true
   RUN_DAST: true
 
 permissions:
@@ -266,9 +266,6 @@ jobs:
       with:
         target: 'http://localhost:80'
         fail-action: false
-        # report-format: 'json'
-        # report-file: '${{ github.event.repository.name }}-zap-report.json'
-        # github-token: ''
         allow_issue_writing: false
         rules_file_name: '.zap/rules.tsv'
         cmd_options: '-a'
