@@ -266,28 +266,19 @@ jobs:
       with:
         target: 'http://localhost:80'
         fail-action: false
-        report-format: 'json'
-        report-file: '${{ github.event.repository.name }}-zap-report.json'
-        github-token: ''
+        # report-format: 'json'
+        # report-file: '${{ github.event.repository.name }}-zap-report.json'
+        # github-token: ''
         allow_issue_writing: false
         rules_file_name: '.zap/rules.tsv'
         cmd_options: '-a'
 
-    # - name: Subiendo el reporte de Trivy como artefacto
-    #   if: ${{ env.RUN_DAST == 'true' }}
-    #   uses: actions/upload-artifact@master
-    #   with:
-    #       name: ${{ github.event.repository.name }}-zap-report
-    #       path: ./${{ github.event.repository.name }}-zap-report.json
-
     - name: Conteo de vulnerabilidades encontradas por OWASP ZAP
       if: ${{ env.RUN_DAST == 'true' }}
       run: |
-        ls -la
-        unzip zap_scan.zip -d zap-scan
-        HIGH=$(jq '[.site[].alerts[] | select(.risk == "High")] | length' zap-scan/report_json.json)
-        MEDIUM=$(jq '[.site[].alerts[] | select(.risk == "Medium")] | length' zap-scan/report_json.json)
-        LOW=$(jq '[.site[].alerts[] | select(.risk == "Low")] | length' zap-scan/report_json.json)
+        HIGH=$(jq '[.site[].alerts[] | select(.riskcode == "3")] | length' ./report_json.json)
+        MEDIUM=$(jq '[.site[].alerts[] | select(.riskcode == "2")] | length' ./report_json.json)
+        LOW=$(jq '[.site[].alerts[] | select(.riskcode == "1")] | length' ./report_json.json)
         echo "Número de vulnerabilidades altas: $HIGH"
         echo "Número de vulnerabilidades medias: $MEDIUM"
         echo "Número de vulnerabilidades bajas: $LOW"
