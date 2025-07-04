@@ -24,3 +24,8 @@ curl -f -X POST -u "XXXXXXXXXXXXXXXXX:" "https://sonarcloud.io/api/issues/search
 -d "impactSeverities=BLOCKER,HIGH,MEDIUM"
 ```
 
+## Como parsear Json files con jq
+1. Buscar las dependencies que tengan el fileName jszip.js
+```bash
+jq '.dependencies[] | select(.fileName == "jszip.js")' dependency-check-report.json
+```
