@@ -273,19 +273,21 @@ jobs:
         rules_file_name: '.zap/rules.tsv'
         cmd_options: '-a'
 
-    - name: Subiendo el reporte de Trivy como artefacto
-      if: ${{ env.RUN_DAST == 'true' }}
-      uses: actions/upload-artifact@master
-      with:
-          name: ${{ github.event.repository.name }}-zap-report
-          path: ./${{ github.event.repository.name }}-zap-report.json
+    # - name: Subiendo el reporte de Trivy como artefacto
+    #   if: ${{ env.RUN_DAST == 'true' }}
+    #   uses: actions/upload-artifact@master
+    #   with:
+    #       name: ${{ github.event.repository.name }}-zap-report
+    #       path: ./${{ github.event.repository.name }}-zap-report.json
 
     - name: Conteo de vulnerabilidades encontradas por OWASP ZAP
       if: ${{ env.RUN_DAST == 'true' }}
       run: |
-        HIGH=$(jq '[.site[].alerts[] | select(.risk == "High")] | length' zap-report.json)
-        MEDIUM=$(jq '[.site[].alerts[] | select(.risk == "Medium")] | length' zap-report.json)
-        LOW=$(jq '[.site[].alerts[] | select(.risk == "Low")] | length' zap-report.json)
+        ls -la
+        unzip zap_scan.zip -d zap-scan
+        HIGH=$(jq '[.site[].alerts[] | select(.risk == "High")] | length' zap-scan/report_json.json)
+        MEDIUM=$(jq '[.site[].alerts[] | select(.risk == "Medium")] | length' zap-scan/report_json.json)
+        LOW=$(jq '[.site[].alerts[] | select(.risk == "Low")] | length' zap-scan/report_json.json)
         echo "Número de vulnerabilidades altas: $HIGH"
         echo "Número de vulnerabilidades medias: $MEDIUM"
         echo "Número de vulnerabilidades bajas: $LOW"
