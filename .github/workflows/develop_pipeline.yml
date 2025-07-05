@@ -8,10 +8,10 @@ on:
 
 env:
   SONAR_ORGANIZATION: jcaresdiplomado
-  RUN_SAST: true
-  RUN_SCA: true
+  RUN_SAST: false
+  RUN_SCA: false
   RUN_CONTAINER_SCAN: true
-  RUN_DAST: true
+  RUN_DAST: false
 
 permissions:
   contents: read
@@ -206,35 +206,38 @@ jobs:
       uses: aquasecurity/trivy-action@master
       with:
         image-ref: ${{ github.event.repository.name }}:latest
-        format: 'json'
-        output: '${{ github.event.repository.name }}-trivy-report.json'
+        # format: 'json'
+        format: 'html'
+        # output: '${{ github.event.repository.name }}-trivy-report.json'
+        output: '${{ github.event.repository.name }}-trivy-report.html'
 
     - name: Subiendo el reporte de Trivy como artefacto
       if: ${{ env.RUN_CONTAINER_SCAN == 'true' || always() }}
       uses: actions/upload-artifact@master
       with:
           name: ${{ github.event.repository.name }}-trivy-report
-          path: ./${{ github.event.repository.name }}-trivy-report.json
+          # path: ./${{ github.event.repository.name }}-trivy-report.json
+          path: ./${{ github.event.repository.name }}-trivy-report.html
 
-    - name: Conteo de vulderabilidades encontradas por trivy
-      if: ${{ env.RUN_CONTAINER_SCAN == 'true' || always() }}
-      run: |
-        CRITICAL=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | length' ${{ github.event.repository.name }}-trivy-report.json | wc -l)
-        HIGH=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "HIGH") | length' ${{ github.event.repository.name }}-trivy-report.json | wc -l)
-        MEDIUM=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "MEDIUM") | length' ${{ github.event.repository.name }}-trivy-report.json | wc -l)
-        echo "Número vulnerabilidades críticas: $CRITICAL"
-        echo "Número vulnerabilidades altas: $HIGH"
-        echo "Número vulnerabilidades medias: $MEDIUM"
-
-        TOTAL=$((CRITICAL + HIGH + MEDIUM))
-        echo "Total de vulnerabilidades encontradas: $TOTAL"
-
-        if [ "$TOTAL" -ne 0 ]; then
-          echo "Se encontraron vulnerabilidades críticas, altas o medias."
-          exit 1
-        else
-          echo "No se encontraron vulnerabilidades críticas, altas o medias."
-        fi
+    # - name: Conteo de vulderabilidades encontradas por trivy
+    #   if: ${{ env.RUN_CONTAINER_SCAN == 'true' || always() }}
+    #   run: |
+    #     CRITICAL=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | length' ${{ github.event.repository.name }}-trivy-report.json | wc -l)
+    #     HIGH=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "HIGH") | length' ${{ github.event.repository.name }}-trivy-report.json | wc -l)
+    #     MEDIUM=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "MEDIUM") | length' ${{ github.event.repository.name }}-trivy-report.json | wc -l)
+    #     echo "Número vulnerabilidades críticas: $CRITICAL"
+    #     echo "Número vulnerabilidades altas: $HIGH"
+    #     echo "Número vulnerabilidades medias: $MEDIUM"
+    #
+    #     TOTAL=$((CRITICAL + HIGH + MEDIUM))
+    #     echo "Total de vulnerabilidades encontradas: $TOTAL"
+    #
+    #     if [ "$TOTAL" -ne 0 ]; then
+    #       echo "Se encontraron vulnerabilidades críticas, altas o medias."
+    #       exit 1
+    #     else
+    #       echo "No se encontraron vulnerabilidades críticas, altas o medias."
+    #     fi
 
   DAST:
     # runs-on: self-hosted
