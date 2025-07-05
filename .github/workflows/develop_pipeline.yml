@@ -47,7 +47,8 @@ jobs:
 
           # Ahora elegimos la rama develop como principal si es que no es
           # Ejemplo de salida del curl consultando las ramas:{"branches":[{"name":"master","isMain":true,"type":"LONG","branchId":"b2a7126f-0fdf-4697-8aea-b7e18b793287","branchUuidV1":"AZexjqe1mn08eUWmbf6z"}]}
-          MAIN_BRANCH=$(curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_branches/list" -d "project=${{ github.event.repository.name }}" | jq -r '.branches[] | select(.isMain == true) | .name')
+          MAIN_BRANCH=$(curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" "https://sonarcloud.io/api/project_branches/list" \
+          -d "project=${{ github.event.repository.name }}" | jq -r '.branches[] | select(.isMain == true) | .name')
           if [ "$MAIN_BRANCH" !=  ${GITHUB_REF##*/} ]; then
             echo "Error: La rama principal no es ${GITHUB_REF##*/}, es '$MAIN_BRANCH'."
             echo "Cambiando la rama principal a ${GITHUB_REF##*/}"
