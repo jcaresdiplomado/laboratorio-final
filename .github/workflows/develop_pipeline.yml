@@ -207,9 +207,9 @@ jobs:
       with:
         image-ref: ${{ github.event.repository.name }}:latest
         # format: 'json'
-        format: 'html'
+        format: 'table'
         # output: '${{ github.event.repository.name }}-trivy-report.json'
-        output: '${{ github.event.repository.name }}-trivy-report.html'
+        output: '${{ github.event.repository.name }}-trivy-report'
 
     - name: Subiendo el reporte de Trivy como artefacto
       if: ${{ env.RUN_CONTAINER_SCAN == 'true' || always() }}
@@ -217,7 +217,7 @@ jobs:
       with:
           name: ${{ github.event.repository.name }}-trivy-report
           # path: ./${{ github.event.repository.name }}-trivy-report.json
-          path: ./${{ github.event.repository.name }}-trivy-report.html
+          path: ./${{ github.event.repository.name }}-trivy-report
 
     # - name: Conteo de vulderabilidades encontradas por trivy
     #   if: ${{ env.RUN_CONTAINER_SCAN == 'true' || always() }}
